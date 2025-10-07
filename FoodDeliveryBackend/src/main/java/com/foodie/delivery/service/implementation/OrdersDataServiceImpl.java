@@ -1,9 +1,13 @@
 package com.foodie.delivery.service.implementation;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.foodie.delivery.entity.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.foodie.delivery.config.OrderDataMapper;
@@ -11,17 +15,13 @@ import com.foodie.delivery.config.OrderStatus;
 import com.foodie.delivery.config.PaymentStatus;
 import com.foodie.delivery.dtos.OrderDataRequestDto;
 import com.foodie.delivery.dtos.OrderDataResponseDto;
-import com.foodie.delivery.entity.FoodItem;
-import com.foodie.delivery.entity.OrderItems;
-import com.foodie.delivery.entity.OrdersData;
-import com.foodie.delivery.entity.Payment;
-import com.foodie.delivery.entity.Restaurant;
-import com.foodie.delivery.entity.UserRegistration;
 import com.foodie.delivery.repository.FoodItemRepo;
 import com.foodie.delivery.repository.OrdersDataRepo;
 import com.foodie.delivery.repository.RestaurantRepo;
 import com.foodie.delivery.repository.UserRegistrationRepo;
 import com.foodie.delivery.service.OrdersDataService;
+
+import static com.foodie.delivery.config.OrderStatus.PENDING;
 
 @Service
 public class OrdersDataServiceImpl implements OrdersDataService{
@@ -45,12 +45,22 @@ public class OrdersDataServiceImpl implements OrdersDataService{
     @Override
     public OrderDataResponseDto createOrder(OrderDataRequestDto dto) {
         OrdersData order = new OrdersData();
-        order.setStatus(dto.getStatus()); // PENDING
-        order.setDate(dto.getDate());
+        order.setStatus(PENDING);
+        order.setDate(LocalDateTime.now());
 
-        // Fetch User and Restaurant
-        UserRegistration user = userRegistrationRepository.findById(dto.getUserId())
+//        Fetch User and Restaurant
+//        UserRegistration user = userRegistrationRepository.findById(dto.getUserId())
+//                .orElseThrow(() -> new RuntimeException("User not found"));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("User not authenticated");
+        }
+
+        //jj
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        UserRegistration user = userRegistrationRepository.findById(userPrincipal.getRid())
                 .orElseThrow(() -> new RuntimeException("User not found"));
+        order.setUserRegistration(user);
         Restaurant restaurant = restaurantRepository.findById(dto.getRestaurantId())
                 .orElseThrow(() -> new RuntimeException("Restaurant not found"));
         order.setUserRegistration(user);

@@ -14,10 +14,15 @@ public class UserPrincipal implements UserDetails{
 	public UserPrincipal(UserRegistration user) {
 		this.user = user;
 	}
+
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		return Collections.singleton(new SimpleGrantedAuthority("USER"));
 	}
+
+    public long getRid(){
+        return user.getRid();
+    }
 
 	@Override
 	public String getPassword() {		

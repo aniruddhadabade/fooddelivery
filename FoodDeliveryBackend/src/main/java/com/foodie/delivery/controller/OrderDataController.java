@@ -2,6 +2,7 @@ package com.foodie.delivery.controller;
 
 import java.util.List;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,7 +26,7 @@ public class OrderDataController {
     private OrdersDataService ordersDataService;
 
     @PostMapping("/createorder")
-    public OrderDataResponseDto createOrder(@RequestBody OrderDataRequestDto requestDto) {
+    public OrderDataResponseDto createOrder(@RequestBody @Valid OrderDataRequestDto requestDto) {
         return ordersDataService.createOrder(requestDto);
     }
 

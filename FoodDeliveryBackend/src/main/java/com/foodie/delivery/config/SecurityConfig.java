@@ -1,5 +1,6 @@
 package com.foodie.delivery.config;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,10 +38,18 @@ public class SecurityConfig {
 				.requestMatchers("/api/registration/**").permitAll()
 				.requestMatchers("/api/registration/login").permitAll()
 				.requestMatchers("/login").permitAll()
-				.anyRequest().authenticated())
-				.formLogin(Customizer.withDefaults())
+				.anyRequest().authenticated()
+                )
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .formLogin(form -> form.disable())  // <-- disable form login
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setContentType("application/json");
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.getWriter().write("{\"error\": \"Unauthorized\"}");
+                        })
+                )
 				.build();
 	}
 	
